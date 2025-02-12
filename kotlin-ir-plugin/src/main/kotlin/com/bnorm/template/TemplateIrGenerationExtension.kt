@@ -22,13 +22,34 @@ import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 
+
+import org.jetbrains.kotlin.ir.IrElement
+import org.jetbrains.kotlin.ir.expressions.IrBranch
+import org.jetbrains.kotlin.ir.util.dump
+import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
+
+class IfStatementDetector(private val messageCollector: MessageCollector) : IrElementVisitorVoid {
+
+  override fun visitElement(element: IrElement) {
+    element.acceptChildren(this, null) // Recursively visit all children
+  }
+
+  override fun visitBranch(branch: IrBranch) {
+    messageCollector.report(CompilerMessageSeverity.INFO, "Found if-statement: ${branch.dump()}")
+    super.visitBranch(branch)
+  }
+}
+
 class TemplateIrGenerationExtension(
   private val messageCollector: MessageCollector,
   private val string: String,
   private val file: String
 ) : IrGenerationExtension {
   override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
+    /*
     messageCollector.report(CompilerMessageSeverity.INFO, "Argument 'string' = $string")
     messageCollector.report(CompilerMessageSeverity.INFO, "Argument 'file' = $file")
+    */
+    moduleFragment.accept(IfStatementDetector(messageCollector), null)
   }
 }

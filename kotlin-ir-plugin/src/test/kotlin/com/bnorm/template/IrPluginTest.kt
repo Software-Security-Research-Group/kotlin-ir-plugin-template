@@ -34,6 +34,7 @@ class IrPluginTest {
         "main.kt", """
 fun main() {
   println(debug())
+  if(2>1) println(2)
 }
 
 fun debug() = "Hello, World!"
